@@ -6,10 +6,10 @@ import torch.nn as nn
 import torch.optim as optim
 
 # Number of epochs to train for 
-NUM_EPOCHS = 15
+NUM_EPOCHS = 5
 
 if __name__ == "__main__":
-    model = stop_sign_recognizer()
+    model = stop_sign_recognizer(use_gpu=True)
     
     # Print the model we just instantiated
     print(f'Model created, input size is : {model.input_size}')
@@ -66,5 +66,5 @@ if __name__ == "__main__":
     # Train and evaluate
     model_ft, hist = model.train_model(dataloaders_dict, criterion, optimizer_ft, num_epochs=NUM_EPOCHS)
 
-    # Save model
+    # Save the model
     model.save()
