@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import time
 import os
 import copy
+from PIL import Image
 
 
 # Top level data directory. Here we assume the format of the directory conforms 
@@ -31,7 +32,8 @@ BATCH_SIZE = 8
 # Flag for feature extracting. When False, we finetune the whole model, 
 #   when True we only update the reshaped layer params
 FEATURE_EXTRACT = True
-
+# Default file for saved model
+DEFAULT_FILE = "saved_model.save"
 
 class stop_sign_recognizer(object):
     def __init__(self, use_gpu = False):
@@ -48,11 +50,11 @@ class stop_sign_recognizer(object):
         else:
             self.device = "cpu"
 
-    def save(self, path):
+    def save(self, path=DEFAULT_FILE):
         torch.save(self.model.state_dict(), path)
 
-    def load(self, path):
-        the_model.load_state_dict(torch.load(path))
+    def load(self, path=DEFAULT_FILE):
+        self.model.load_state_dict(torch.load(path))
 
     def set_eval(self):
         # Set the model in eval mode
@@ -232,32 +234,43 @@ class stop_sign_recognizer(object):
         return model_ft, input_size
 
 
-    def stop_sign_or_not(model_name, photos):
+    def stop_sign_or_not(self, photos):
         """
-        Remove unauthorized characters in a string, lower it and remove unneeded spaces
+        Analyse a list of images and return if there is a stop sign or not in each
         Parameters
         ----------
-        model_name : the trained pytorch model
-        photos : a list of path to image files
+        photos :a list of images' path
         Returns
         -------
         a list of float (one for each image from input) : confidence that there is a stop sign (1 : yes, 0 : no)
         """
-        input_size = INPUT_SIZE
-        data_transforms = {
-            'val': transforms.Compose([
-                transforms.Resize(input_size),
-                transforms.CenterCrop(input_size),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ]),
-        }
+        data_transforms = transforms.Compose([  transforms.Resize(self.input_size),
+                                                transforms.CenterCrop(self.input_size),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                            ])
 
         print("Initializing Datasets and Dataloaders...")
 
-        # Create training and validation datasets
-        image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x]) for x in ['train', 'val']}
-        # Create training and validation dataloaders
-        dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
         results = []
+        for i in range(0, len(photos), self.batch_size):
+            if i + self.batch_size > len(photos):
+                photo_batch = photos[i:]
+            else:
+                photo_batch = photos[i:i + self.batch_size]
+
+            photo_batch_tensor = [data_transforms(Image.open(x)) for x in photo_batch]
+
+            # Check tensor shape (some images can have more than 3 channels for example)
+            for a in photo_batch_tensor:
+                if a.shape != torch.Size([3, 224, 224]):
+                    raise Exception(f'Invalid image file : {a.shape}')
+            
+            photo_batch_tensor = torch.stack(photo_batch_tensor)
+            photo_batch_tensor = photo_batch_tensor.to(self.device)
+            outputs = self.model(photo_batch_tensor)
+            _, preds = torch.max(outputs, 1)
+            results += preds.tolist()
+
+        print(f'predictions = {results}')
         return results
