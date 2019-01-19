@@ -3,7 +3,7 @@
 import overpy
 import requests
 from time import sleep
-import os, shutil
+import os, shutil, json
 
 def printlist(list):
     print(*list, sep = "\n")
@@ -26,7 +26,7 @@ def get_node(zone):
     node_collected = []
  
     for node in result.nodes:
-        temp = {'id': node.id, 'lat': node.lat, 'lon': node.lon, 'highway': node.tags['highway']}
+        temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
         if 'direction' in node.tags:
             temp['direction'] = node.tags['direction']
         node_collected.append(temp)
@@ -49,24 +49,40 @@ def get_images_around(node, radius = 20):
     query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
     response = requests.get(query, headers=headers)
     images = response.json()
-    return images
+    return images['pictures']
 
-def save_workspace(path = './workspace/'):
-    if not os.path.exists(path):
-        os.makedirs(path)
+def save_workspace(images, node, path = './workspace'):
+    #TODO classify by "workspace/initial_node/picture_name+timestamp"
+    if not os.path.exists(path+"/"+str(node["id"])+"/"):
+        os.makedirs(path+"/"+str(node["id"])+"/")
 
-    for img in images['pictures']:
-        print(img['pictureUrl'][39:60])
+    for img in images:
+        print(img['pictureUrl'][39:60]+str(img["date"]))
         img_data = requests.get(img['pictureUrl']).content
-        with open(path+img['pictureUrl'][39:60]+'.jpg', 'wb') as handler:
+        with open(path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg', 'wb') as handler:
             handler.write(img_data)
-        sleep(1)
-    return 1
+        img["path"]=path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg'
+        sleep(0.2)
+    return images
 
 def delete_workspace(path = './workspace/'):
     if os.path.exists(path):
         shutil.rmtree(path)
     return 1
+
+def add_info_to_images(images, node):
+    for img in images : #list of images around the node
+        img["node_coordinates"]={"lat":node["lat"],"lng":node["lon"]}
+        img["node_id"]=node["id"]
+        if "direction" in node :
+            img["node_direction"]=node["direction"]
+        else :
+            img["node_direction"]=None
+        img["road_direction"]=None
+        img["human_prediction"]=None
+        img["classifier_prediction"]=None
+
+    return images
 
 #################################
 #                               #
@@ -74,6 +90,17 @@ def delete_workspace(path = './workspace/'):
 if __name__ == "__main__":
 
     nodes = get_node('fast')
-    images = get_images_around(nodes[0])
-    #save_workspace()
+    for node in nodes :
+        images = get_images_around(node, radius = 2)
+        images = save_workspace(images, node)
+        images = add_info_to_images(images, node)
+        node["images"]=images
+
+
+    print(nodes)
+
+    with open('./data.json', 'w') as foo:
+        json.dump(nodes, foo)
+
+
     delete_workspace()
