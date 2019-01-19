@@ -27,3 +27,7 @@ The contest contain two objectives :
 1. Find an stop sign on openstreetmap which is not fully documented in order to update it (add the orientation data for example)
 
 2. Automatically find and add data to openstreetmap (an unknown stop sign for example)
+
+====
+pour Dominique :
+[out:json][timeout:25];area(3600107435)->.searchArea;(node["highway"="stop"](area.searchArea););out body;way(bn);out body;>;out skel qt;
