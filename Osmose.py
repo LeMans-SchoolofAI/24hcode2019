@@ -52,7 +52,6 @@ def get_images_around(node, radius = 20):
     return images['pictures']
 
 def save_workspace(images, node, path = './workspace'):
-    #TODO classify by "workspace/initial_node/picture_name+timestamp"
     if not os.path.exists(path+"/"+str(node["id"])+"/"):
         os.makedirs(path+"/"+str(node["id"])+"/")
 
