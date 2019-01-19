@@ -250,8 +250,6 @@ class stop_sign_recognizer(object):
                                                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
                                             ])
 
-        print("Initializing Datasets and Dataloaders...")
-
         results = []
         for i in range(0, len(photos), self.batch_size):
             if i + self.batch_size > len(photos):
@@ -271,6 +269,4 @@ class stop_sign_recognizer(object):
             outputs = self.model(photo_batch_tensor)
             _, preds = torch.max(outputs, 1)
             results += preds.tolist()
-
-        print(f'predictions = {results}')
         return results
