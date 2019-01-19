@@ -32,7 +32,8 @@ BATCH_SIZE = 8
 # Flag for feature extracting. When False, we finetune the whole model, 
 #   when True we only update the reshaped layer params
 FEATURE_EXTRACT = True
-
+# Default file for saved model
+DEFAULT_FILE = "saved_model.save"
 
 class stop_sign_recognizer(object):
     def __init__(self, use_gpu = False):
@@ -49,10 +50,10 @@ class stop_sign_recognizer(object):
         else:
             self.device = "cpu"
 
-    def save(self, path):
+    def save(self, path=DEFAULT_FILE):
         torch.save(self.model.state_dict(), path)
 
-    def load(self, path):
+    def load(self, path=DEFAULT_FILE):
         self.model.load_state_dict(torch.load(path))
 
     def set_eval(self):

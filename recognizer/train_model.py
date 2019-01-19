@@ -67,4 +67,4 @@ if __name__ == "__main__":
     model_ft, hist = model.train_model(dataloaders_dict, criterion, optimizer_ft, num_epochs=NUM_EPOCHS)
 
     # Save model
-    model.save("saved_model.save")
+    model.save()
