@@ -4,32 +4,20 @@ from PySide2.QtCore import Slot, Qt
 
 from UserInterface.ItemsList import *
 from UserInterface.Logger import *
-from UserInterface.Utils.VerticalScrollArea import *
+from UserInterface.Utils.ClosableWidget import *
 
-class MainWidget(QWidget):
+class MainWidget(ClosableWidget):
     def __init__(self):
-        QWidget.__init__(self)
+        ClosableWidget.__init__(self)
 
-        self.itemsList = ItemsList()
+        self.itemsList = ItemsList(self)
         self.map = QLabel("TODO: map")
         self.map.setAlignment(Qt.AlignCenter)
         self.logger = Logger()
 
-        scrollItemsList = VerticalScrollArea()
-        #scrollLogger = VerticalScrollArea()
-
-        itemsListWidget = QWidget()
-        itemsListWidget.setLayout(self.itemsList)
-
-        #scrollLoggerWidget = QWidget()
-        #scrollLoggerWidget.setLayout(self.logger)
-
-        scrollItemsList.setWidget(itemsListWidget)
-        #scrollLogger.setWidget(scrollLoggerWidget)
-
         self.grid = QGridLayout()
         self.grid.addWidget(self.map, 0, 0)
-        self.grid.addWidget(scrollItemsList, 1, 0)
+        self.grid.addItem(self.itemsList, 1, 0)
         self.grid.addItem(self.logger, 0, 1, 2, 1)
         self.grid.setColumnStretch(0, 3)
         self.grid.setColumnStretch(1, 1)
