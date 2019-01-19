@@ -1,6 +1,6 @@
 import os
 import boto3
-import pickle
+import json
 from glob import glob
 
 def get_files_list(root,ext):
@@ -30,9 +30,11 @@ if __name__ == "__main__":
     #dir_ = './workspace/'
     paths = glob('./workspace/*')
 
+    print(paths)
+
     for path in paths:
-        print(path)
-        if os.path.isfile(path+'aws_labels.pickle'):
+        print('\n>>',path)
+        if os.path.isfile(path+'/aws_labels.json'):
             print(f'labels of {path} files already exec')
         else:
             files_list = get_files_list(path,'jpg')
@@ -45,8 +47,7 @@ if __name__ == "__main__":
                 print(aws)
                 labels.append(aws)
 
-        #pickle_(path+'aws_labels.pickle',labels)
-            with open(path+'aws_labels.json', 'w') as foo:
+            with open(path+'/aws_labels.json', 'w') as foo:
                 json.dump(labels, foo)
 
 
