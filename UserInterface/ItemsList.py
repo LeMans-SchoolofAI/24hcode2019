@@ -14,7 +14,7 @@ class ItemsList(QGridLayout):
             self.addWidget(QLabel(str(node["highway"])), i, 3)
             button = QPushButton("Detail")
             self.addWidget(button, i, 4)
-            button.clicked.connect(lambda: self.onButtonClicked(str(node)))
+            button.clicked.connect(lambda: self.onButtonClicked(node))
 
     def onButtonClicked(self, node):
         print("TODO: open window with node details")

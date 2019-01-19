@@ -3,6 +3,7 @@ from PySide2.QtWidgets import (QLabel, QWidget, QGridLayout,
 from PySide2.QtCore import Slot, Qt
 
 from UserInterface.ItemsList import *
+from UserInterface.Logger import *
 from UserInterface.Utils.VerticalScrollArea import *
 
 class MainWidget(QWidget):
@@ -10,24 +11,26 @@ class MainWidget(QWidget):
         QWidget.__init__(self)
 
         self.itemsList = ItemsList()
-        self.itemsList.setAlignment(Qt.AlignTop)
         self.map = QLabel("TODO: map")
         self.map.setAlignment(Qt.AlignCenter)
-        self.logs = QLabel("TODO: logs")
-        self.logs.setAlignment(Qt.AlignCenter)
+        self.logger = Logger()
 
         scrollItemsList = VerticalScrollArea()
+        #scrollLogger = VerticalScrollArea()
 
-        itemsListWidget = QWidget(self)
+        itemsListWidget = QWidget()
         itemsListWidget.setLayout(self.itemsList)
-        itemsListWidget.setMinimumWidth(scrollItemsList.width())
+
+        #scrollLoggerWidget = QWidget()
+        #scrollLoggerWidget.setLayout(self.logger)
 
         scrollItemsList.setWidget(itemsListWidget)
+        #scrollLogger.setWidget(scrollLoggerWidget)
 
         self.grid = QGridLayout()
         self.grid.addWidget(self.map, 0, 0)
         self.grid.addWidget(scrollItemsList, 1, 0)
-        self.grid.addWidget(self.logs, 0, 1, 2, 1)
+        self.grid.addItem(self.logger, 0, 1, 2, 1)
         self.grid.setColumnStretch(0, 3)
         self.grid.setColumnStretch(1, 1)
         self.grid.setRowStretch(0, 1)
