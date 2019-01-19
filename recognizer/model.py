@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import time
 import os
 import copy
+from PIL import Image
 
 
 # Top level data directory. Here we assume the format of the directory conforms 
@@ -237,32 +238,38 @@ class stop_sign_recognizer(object):
         Analyse a list of images and return if there is a stop sign or not in each
         Parameters
         ----------
-        photos : a list of path to image files
+        photos :a list of images' path
         Returns
         -------
         a list of float (one for each image from input) : confidence that there is a stop sign (1 : yes, 0 : no)
         """
-        data_transforms = {
-            'val': transforms.Compose([
-                transforms.Resize(self.input_size),
-                transforms.CenterCrop(self.input_size),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ]),
-        }
+        data_transforms = transforms.Compose([  transforms.Resize(self.input_size),
+                                                transforms.CenterCrop(self.input_size),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                            ])
 
         print("Initializing Datasets and Dataloaders...")
 
-        # Create training and validation datasets
-        image_datasets = {x: datasets.ImageFolder(os.path.join(self.data_dir, x), data_transforms[x]) for x in ['val']}
-        print(f'image_datasets = {image_datasets}')
-        # Create training and validation dataloaders
-        dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=self.batch_size, shuffle=True, num_workers=4) for x in ['val']}
-        
-        # Calculate predictions
-        for inputs, _ in dataloaders_dict['val']:
-            inputs = inputs.to(self.device)
-            outputs = self.model(inputs)
+        results = []
+        for i in range(0, len(photos), self.batch_size):
+            if i + self.batch_size > len(photos):
+                photo_batch = photos[i:]
+            else:
+                photo_batch = photos[i:i + self.batch_size]
+
+            photo_batch_tensor = [data_transforms(Image.open(x)) for x in photo_batch]
+
+            # Check tensor shape (some images can have more than 3 channels for example)
+            for a in photo_batch_tensor:
+                if a.shape != torch.Size([3, 224, 224]):
+                    raise Exception(f'Invalid image file : {a.shape}')
+            
+            photo_batch_tensor = torch.stack(photo_batch_tensor)
+            photo_batch_tensor = photo_batch_tensor.to(self.device)
+            outputs = self.model(photo_batch_tensor)
             _, preds = torch.max(outputs, 1)
-            print(f'prediction = {preds}')
-        return preds
+            results += preds.tolist()
+
+        print(f'predictions = {results}')
+        return results
