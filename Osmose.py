@@ -50,9 +50,10 @@ def get_images_around(node, radius = 20):
 
     #print('avant carto')
 
-    query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
+    #query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
+    query="http://ns3114475.ip-5-135-139.eu:28111/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
 
-    #print('API',query)
+    print('API',query)
 
     response = requests.get(query, headers=headers)
 
