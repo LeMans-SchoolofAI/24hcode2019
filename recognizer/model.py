@@ -52,7 +52,7 @@ class stop_sign_recognizer(object):
         torch.save(self.model.state_dict(), path)
 
     def load(self, path):
-        the_model.load_state_dict(torch.load(path))
+        self.model.load_state_dict(torch.load(path))
 
     def set_eval(self):
         # Set the model in eval mode
@@ -232,22 +232,20 @@ class stop_sign_recognizer(object):
         return model_ft, input_size
 
 
-    def stop_sign_or_not(model_name, photos):
+    def stop_sign_or_not(self, photos):
         """
-        Remove unauthorized characters in a string, lower it and remove unneeded spaces
+        Analyse a list of images and return if there is a stop sign or not in each
         Parameters
         ----------
-        model_name : the trained pytorch model
         photos : a list of path to image files
         Returns
         -------
         a list of float (one for each image from input) : confidence that there is a stop sign (1 : yes, 0 : no)
         """
-        input_size = INPUT_SIZE
         data_transforms = {
             'val': transforms.Compose([
-                transforms.Resize(input_size),
-                transforms.CenterCrop(input_size),
+                transforms.Resize(self.input_size),
+                transforms.CenterCrop(self.input_size),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ]),
@@ -256,8 +254,15 @@ class stop_sign_recognizer(object):
         print("Initializing Datasets and Dataloaders...")
 
         # Create training and validation datasets
-        image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x]) for x in ['train', 'val']}
+        image_datasets = {x: datasets.ImageFolder(os.path.join(self.data_dir, x), data_transforms[x]) for x in ['val']}
+        print(f'image_datasets = {image_datasets}')
         # Create training and validation dataloaders
-        dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
-        results = []
-        return results
+        dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=self.batch_size, shuffle=True, num_workers=4) for x in ['val']}
+        
+        # Calculate predictions
+        for inputs, _ in dataloaders_dict['val']:
+            inputs = inputs.to(self.device)
+            outputs = self.model(inputs)
+            _, preds = torch.max(outputs, 1)
+            print(f'prediction = {preds}')
+        return preds

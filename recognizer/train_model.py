@@ -2,6 +2,8 @@ from model import stop_sign_recognizer
 from torchvision import datasets, transforms
 import os
 import torch
+import torch.nn as nn
+import torch.optim as optim
 
 # Number of epochs to train for 
 NUM_EPOCHS = 15
@@ -63,3 +65,6 @@ if __name__ == "__main__":
 
     # Train and evaluate
     model_ft, hist = model.train_model(dataloaders_dict, criterion, optimizer_ft, num_epochs=NUM_EPOCHS)
+
+    # Save model
+    model.save("saved_model.save")
