@@ -28,40 +28,42 @@ MODEL_NAME = "squeezenet"
 NUM_CLASSES = 2
 # Batch size for training (change depending on how much memory you have)
 BATCH_SIZE = 8
-# Number of epochs to train for 
-NUM_EPOCHS = 15
 # Flag for feature extracting. When False, we finetune the whole model, 
 #   when True we only update the reshaped layer params
 FEATURE_EXTRACT = True
 
 
 class stop_sign_recognizer(object):
-    def __init__(self):
+    def __init__(self, use_gpu = False):
         self.data_dir = DATA_DIR
         self.model_name = MODEL_NAME
+        self.is_inception = (self.model_name=="inception")
         self.num_classes = NUM_CLASSES
         self.batch_size = BATCH_SIZE
-        self.num_epochs = NUM_EPOCHS
         self.feature_extract = FEATURE_EXTRACT
         self.model, self.input_size = self.__initialize_model__(use_pretrained=True)
+        if use_gpu:
+            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            self.model = self.model.to(self.device)
+        else:
+            self.device = "cpu"
 
-    # Do not try to send to GPU if the dataloader pipeline is not defined yet
-    def send_to_gpu(self):
-        # Detect if we have a GPU available
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # Send the model to GPU if possible
-        self.model = self.model.to(device)
+    def save(self, path):
+        torch.save(self.model.state_dict(), path)
+
+    def load(self, path):
+        the_model.load_state_dict(torch.load(path))
 
     def set_eval(self):
         # Set the model in eval mode
         self.model.eval()
     
-    def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_inception=False):
+    def train_model(self, dataloaders, criterion, optimizer, num_epochs=25):
         since = time.time()
 
         val_acc_history = []
         
-        best_model_wts = copy.deepcopy(model.state_dict())
+        best_model_wts = copy.deepcopy(self.model.state_dict())
         best_acc = 0.0
 
         for epoch in range(num_epochs):
@@ -71,17 +73,17 @@ class stop_sign_recognizer(object):
             # Each epoch has a training and validation phase
             for phase in ['train', 'val']:
                 if phase == 'train':
-                    model.train()  # Set model to training mode
+                    self.model.train()  # Set model to training mode
                 else:
-                    model.eval()   # Set model to evaluate mode
+                    self.model.eval()   # Set model to evaluate mode
 
                 running_loss = 0.0
                 running_corrects = 0
 
                 # Iterate over data.
                 for inputs, labels in dataloaders[phase]:
-                    inputs = inputs.to(device)
-                    labels = labels.to(device)
+                    inputs = inputs.to(self.device)
+                    labels = labels.to(self.device)
 
                     # zero the parameter gradients
                     optimizer.zero_grad()
@@ -93,14 +95,14 @@ class stop_sign_recognizer(object):
                         # Special case for inception because in training it has an auxiliary output. In train
                         #   mode we calculate the loss by summing the final output and the auxiliary output
                         #   but in testing we only consider the final output.
-                        if is_inception and phase == 'train':
+                        if self.is_inception and phase == 'train':
                             # From https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
-                            outputs, aux_outputs = model(inputs)
+                            outputs, aux_outputs = self.model(inputs)
                             loss1 = criterion(outputs, labels)
                             loss2 = criterion(aux_outputs, labels)
                             loss = loss1 + 0.4*loss2
                         else:
-                            outputs = model(inputs)
+                            outputs = self.model(inputs)
                             loss = criterion(outputs, labels)
 
                         _, preds = torch.max(outputs, 1)
@@ -122,7 +124,7 @@ class stop_sign_recognizer(object):
                 # deep copy the model
                 if phase == 'val' and epoch_acc > best_acc:
                     best_acc = epoch_acc
-                    best_model_wts = copy.deepcopy(model.state_dict())
+                    best_model_wts = copy.deepcopy(self.model.state_dict())
                 if phase == 'val':
                     val_acc_history.append(epoch_acc)
 
@@ -133,8 +135,8 @@ class stop_sign_recognizer(object):
         print('Best val Acc: {:4f}'.format(best_acc))
 
         # load best model weights
-        model.load_state_dict(best_model_wts)
-        return model, val_acc_history
+        self.model.load_state_dict(best_model_wts)
+        return self.model, val_acc_history
 
 
     ######################################################################
@@ -259,114 +261,3 @@ class stop_sign_recognizer(object):
         dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
         results = []
         return results
-
-
-
-if __name__ == "__main__":
-    # Initialize the model for this run
-    model_ft, input_size = initialize_model(model_name, num_classes, feature_extract, use_pretrained=True)
-
-    # Print the model we just instantiated
-    print(model_ft) 
-
-
-    ######################################################################
-    # Load Data
-    # ---------
-    # 
-    # Now that we know what the input size must be, we can initialize the data
-    # transforms, image datasets, and the dataloaders. Notice, the models were
-    # pretrained with the hard-coded normalization values, as described
-    # `here <https://pytorch.org/docs/master/torchvision/models.html>`__.
-    # 
-
-    # Data augmentation and normalization for training
-    # Just normalization for validation
-    data_transforms = {
-        'train': transforms.Compose([
-            transforms.RandomResizedCrop(input_size),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        'val': transforms.Compose([
-            transforms.Resize(input_size),
-            transforms.CenterCrop(input_size),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-    }
-
-    print("Initializing Datasets and Dataloaders...")
-
-    # Create training and validation datasets
-    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x]) for x in ['train', 'val']}
-    # Create training and validation dataloaders
-    dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
-
-    # Detect if we have a GPU available
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-
-    ######################################################################
-    # Create the Optimizer
-    # --------------------
-    # 
-    # Now that the model structure is correct, the final step for finetuning
-    # and feature extracting is to create an optimizer that only updates the
-    # desired parameters. Recall that after loading the pretrained model, but
-    # before reshaping, if ``feature_extract=True`` we manually set all of the
-    # parameter’s ``.requires_grad`` attributes to False. Then the
-    # reinitialized layer’s parameters have ``.requires_grad=True`` by
-    # default. So now we know that *all parameters that have
-    # .requires_grad=True should be optimized.* Next, we make a list of such
-    # parameters and input this list to the SGD algorithm constructor.
-    # 
-    # To verify this, check out the printed parameters to learn. When
-    # finetuning, this list should be long and include all of the model
-    # parameters. However, when feature extracting this list should be short
-    # and only include the weights and biases of the reshaped layers.
-    # 
-
-    # Send the model to GPU
-    model_ft = model_ft.to(device)
-
-    # Gather the parameters to be optimized/updated in this run. If we are
-    #  finetuning we will be updating all parameters. However, if we are 
-    #  doing feature extract method, we will only update the parameters
-    #  that we have just initialized, i.e. the parameters with requires_grad
-    #  is True.
-    params_to_update = model_ft.parameters()
-    print("Params to learn:")
-    if feature_extract:
-        params_to_update = []
-        for name,param in model_ft.named_parameters():
-            if param.requires_grad == True:
-                params_to_update.append(param)
-                print("\t",name)
-    else:
-        for name,param in model_ft.named_parameters():
-            if param.requires_grad == True:
-                print("\t",name)
-
-    # Observe that all parameters are being optimized
-    optimizer_ft = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
-
-
-    ######################################################################
-    # Run Training and Validation Step
-    # --------------------------------
-    # 
-    # Finally, the last step is to setup the loss for the model, then run the
-    # training and validation function for the set number of epochs. Notice,
-    # depending on the number of epochs this step may take a while on a CPU.
-    # Also, the default learning rate is not optimal for all of the models, so
-    # to achieve maximum accuracy it would be necessary to tune for each model
-    # separately.
-    # 
-
-    # Setup the loss fxn
-    criterion = nn.CrossEntropyLoss()
-
-    # Train and evaluate
-    model_ft, hist = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs, is_inception=(model_name=="inception"))
