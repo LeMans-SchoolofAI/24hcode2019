@@ -41,13 +41,23 @@ def get_images_around(node, radius = 20):
     output (optionnal) -- number of meter to get images around
     """
     #Hi I'm not a bot
+    #print('begin get image')
+
     headers = requests.utils.default_headers()
     headers.update({
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0',
     })
 
+    #print('avant carto')
+
     query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
+
+    #print('API',query)
+
     response = requests.get(query, headers=headers)
+
+    print(response.status_code)
+
     images = response.json()
     return images['pictures']
 
@@ -88,18 +98,24 @@ def add_info_to_images(images, node):
 #################################
 if __name__ == "__main__":
 
-    nodes = get_node('fast')
+    nodes = get_node('lemans')
     for node in nodes :
-        images = get_images_around(node, radius = 2)
-        images = save_workspace(images, node)
+
+        path = './workspace'
+
+        images = get_images_around(node, radius = 25)
+
+        if os.path.exists(path+"/"+str(node["id"])):
+            print(f'node {node["id"]} allready scrapped')
+        else:
+            images = save_workspace(images, node)
+            print(images)
+
         images = add_info_to_images(images, node)
         node["images"]=images
 
-
-    print(nodes)
-
-    with open('./data.json', 'w') as foo:
-        json.dump(nodes, foo)
+        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+            json.dump(node, foo)
 
 
-    delete_workspace()
+    #delete_workspace()
