@@ -91,16 +91,21 @@ if __name__ == "__main__":
 
     nodes = get_node('fast')
     for node in nodes :
-        images = get_images_around(node, radius = 2)
-        images = save_workspace(images, node)
+
+        path = './workspace'
+
+        images = get_images_around(node, radius = 25)
+
+        if os.path.exists(path+"/"+str(node["id"])):
+            print(f'node {node["id"]} allready scrapped')
+        else:
+            images = save_workspace(images, node)
+
         images = add_info_to_images(images, node)
         node["images"]=images
 
-
-    print(nodes)
-
-    with open('./data.json', 'w') as foo:
-        json.dump(nodes, foo)
+        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+            json.dump(node, foo)
 
 
-    delete_workspace()
+    #delete_workspace()
