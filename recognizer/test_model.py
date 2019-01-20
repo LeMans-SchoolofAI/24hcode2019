@@ -1,7 +1,4 @@
 from model import stop_sign_recognizer
-from torchvision import datasets, transforms
-import os
-import torch
 import argparse
 
 DEFAULT_TEST_FILE = "data\\val\\stop_sign\\70.jpg"
