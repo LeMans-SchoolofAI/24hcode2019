@@ -12,6 +12,33 @@ DEFAULT_CACHE_DIR = './workspace'
 def printlist(list):
     print(*list, sep = "\n")
 
+def get_intersection(zone):
+    api = overpy.Overpass()
+
+    # fetch stop 
+    if zone == 'lemans':
+        result = api.query("""[out:json][timeout:25];area(3600107435)->.searchArea;(way(area.searchArea););out;>;out skel qt;""")
+    else:
+        result = api.query("""[out:json][timeout:25];(way(47.99686464222191,0.18395662307739258,48.00295961729204,0.19527554512023926););out;>;out skel qt;""")
+
+    intersec_collected = []
+    
+    for way in result.ways:
+        #TODO if node in multiple way : add node as intersection
+        print(way)
+        temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
+        if 'direction' in node.tags:
+            temp['direction'] = node.tags['direction']
+        intersec_collected.append(temp)
+
+    return intersec_collected
+
+def get_node_by_id(node_id):
+    my_OsmApi = OsmApi(api="http://ns3114475.ip-5-135-139.eu:3007", username = u"team9@coachaac.com", password = u"coachaac28")
+    my_OsmApi.ChangesetCreate()
+    node = my_OsmApi.NodeGet(node_id)
+    print(node)
+
 def get_node(zone):
     """collect node ["highway"="stop"] from OSMOSE / OVERPASS TURBO
 
@@ -147,11 +174,13 @@ def update_node_direction(node_id, direction):
 #################################
 if __name__ == "__main__":
 
+    # get_node_by_id(6151343495)
+
+    # get_intersection('notlemans')
+
     nodes = get_node('lemans')
     for node in nodes :
         images = get_images_around(node, radius = 5)
-
-        path = DEFAULT_CACHE_DIR
 
         if os.path.exists(path+"/"+str(node["id"])):
             print(f'node {node["id"]} allready scrapped')
@@ -159,11 +188,11 @@ if __name__ == "__main__":
             images = save_workspace(images, node)
         print(images)
 
-        images = add_info_to_images(images, node)
-        node["images"]=images
+    #     images = add_info_to_images(images, node)
+    #     node["images"]=images
 
-        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-            json.dump(node, foo)
+    #     with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+    #         json.dump(node, foo)
 
 
     #delete_workspace()
