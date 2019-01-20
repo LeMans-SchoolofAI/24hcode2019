@@ -4,6 +4,7 @@ import overpy
 import requests
 from time import sleep
 import os, shutil, json
+from osmapi import OsmApi
 
 def printlist(list):
     print(*list, sep = "\n")
@@ -100,6 +101,15 @@ def add_info_to_images(images, node):
 
     return images
 
+def update_node_direction(node_id, direction):
+    my_OsmApi = OsmApi(api="http://ns3114475.ip-5-135-139.eu:3007", username = u"team9@coachaac.com", password = u"coachaac28")
+    my_OsmApi.ChangesetCreate({u'comment': u'Modify node '+str(node_id)})
+    node = my_OsmApi.NodeGet(node_id)
+    node["tag"]["direction"]=direction
+    ChangesData = [{"type": "node","action": "modify","data": node}]
+    my_OsmApi.ChangesetUpload(ChangesData)
+    my_OsmApi.ChangesetClose()
+
 #################################
 #                               #
 #################################
@@ -107,22 +117,19 @@ if __name__ == "__main__":
 
     nodes = get_node('notlemans')
     for node in nodes :
-
-        path = './workspace'
-
         images = get_images_around(node, radius = 5)
+#         path = './workspace'
+    #     if os.path.exists(path+"/"+str(node["id"])):
+    #         print(f'node {node["id"]} allready scrapped')
+    #     else:
+    #         images = save_workspace(images, node)
+    #         print(images)
 
-        if os.path.exists(path+"/"+str(node["id"])):
-            print(f'node {node["id"]} allready scrapped')
-        else:
-            images = save_workspace(images, node)
-            print(images)
+    #     images = add_info_to_images(images, node)
+    #     node["images"]=images
 
-        images = add_info_to_images(images, node)
-        node["images"]=images
-
-        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-            json.dump(node, foo)
+    #     with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+    #         json.dump(node, foo)
 
 
     #delete_workspace()
