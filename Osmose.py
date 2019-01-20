@@ -25,15 +25,15 @@ def get_intersection(zone):
     
     for way in result.ways:
         #TODO if node in multiple way : add node as intersection
-        print(way)
-        temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
-        if 'direction' in node.tags:
-            temp['direction'] = node.tags['direction']
-        intersec_collected.append(temp)
+        # print(way)
+        # temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
+        # if 'direction' in node.tags:
+        #     temp['direction'] = node.tags['direction']
+        # intersec_collected.append(temp)
 
     return intersec_collected
 
-def get_node_by_id(node_id):
+def get_node_by_id(node_id): #not working
     my_OsmApi = OsmApi(api="http://ns3114475.ip-5-135-139.eu:3007", username = u"team9@coachaac.com", password = u"coachaac28")
     my_OsmApi.ChangesetCreate()
     node = my_OsmApi.NodeGet(str(node_id))
