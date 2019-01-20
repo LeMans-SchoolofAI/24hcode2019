@@ -36,7 +36,7 @@ def get_intersection(zone):
 def get_node_by_id(node_id):
     my_OsmApi = OsmApi(api="http://ns3114475.ip-5-135-139.eu:3007", username = u"team9@coachaac.com", password = u"coachaac28")
     my_OsmApi.ChangesetCreate()
-    node = my_OsmApi.NodeGet(node_id)
+    node = my_OsmApi.NodeGet(str(node_id))
     print(node)
 
 def get_node(zone):
@@ -174,10 +174,6 @@ def update_node_direction(node_id, direction):
 #################################
 if __name__ == "__main__":
 
-    # get_node_by_id(6151343495)
-
-    # get_intersection('notlemans')
-
     nodes = get_node('lemans')
     for node in nodes :
         images = get_images_around(node, radius = 5)
@@ -188,11 +184,11 @@ if __name__ == "__main__":
             images = save_workspace(images, node)
         print(images)
 
-    #     images = add_info_to_images(images, node)
-    #     node["images"]=images
+        images = add_info_to_images(images, node)
+        node["images"]=images
 
-    #     with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-    #         json.dump(node, foo)
+        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+            json.dump(node, foo)
 
 
     #delete_workspace()
