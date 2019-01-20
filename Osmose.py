@@ -66,12 +66,12 @@ def save_workspace(images, node, path = './workspace'):
     if not os.path.exists(path+"/"+str(node["id"])+"/"):
         os.makedirs(path+"/"+str(node["id"])+"/")
 
-    for img in images:
+    for index, img in enumerate(images):
         print(img['pictureUrl'][39:60]+str(img["date"]))
         img_data = requests.get(img['pictureUrl']).content
         with open(path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg', 'wb') as handler:
             handler.write(img_data)
-        img["path"]=path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg'
+        images[index]["path"]=path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg'
         sleep(0.2)
     return images
 
@@ -99,12 +99,12 @@ def add_info_to_images(images, node):
 #################################
 if __name__ == "__main__":
 
-    nodes = get_node('lemans')
+    nodes = get_node('notlemans')
     for node in nodes :
 
         path = './workspace'
 
-        images = get_images_around(node, radius = 25)
+        images = get_images_around(node, radius = 5)
 
         if os.path.exists(path+"/"+str(node["id"])):
             print(f'node {node["id"]} allready scrapped')
