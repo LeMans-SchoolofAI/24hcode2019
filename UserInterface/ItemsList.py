@@ -1,4 +1,4 @@
-from Osmose import get_node, get_images_around
+from Osmose import get_node
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QWidget, QGridLayout)
 from PySide2.QtCore import Slot, Qt, QSignalMapper, SIGNAL, SLOT, QObject
@@ -66,13 +66,12 @@ class ItemsList(QGridLayout):
 
     def onButtonClicked(self, node, loggerWidget=None):
         self.subWidget = ClosableWidget()
-        self.subWidget.setLayout(NodeDetails(node))
+        self.subWidget.setLayout(NodeDetails(node, loggerWidget=loggerWidget))
         self.subWidget.registerCloseEvent(self.onWidgetDestroyed)
         self.dataGridWidget.setDisabled(True)
         self.subWidget.setWindowTitle("Node " + str(node["id"]) + " Detail")
         self.subWidget.setFixedSize(640, 480)
         self.subWidget.show()
-        get_images_around(node, radius=5, logger=loggerWidget)
 
     def onWidgetDestroyed(self):
         self.dataGridWidget.setDisabled(False)

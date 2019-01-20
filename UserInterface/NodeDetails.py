@@ -1,12 +1,15 @@
 from PySide2.QtWidgets import (QGridLayout, QLabel, QWidget)
 from PySide2.QtCore import Slot, Qt
+from Osmose import get_images_around
+from UserInterface.Utils.HorizontalScrollArea import *
 
 class NodeDetails(QGridLayout):
-	def __init__(self, node):
+	def __init__(self, node, loggerWidget):
 		QGridLayout.__init__(self)
 		self.node = node
+		self.loggerWidget = loggerWidget
 
-		#self.paths = [image["path"] for image in self.node["images"]]
+		self.images = get_images_around(node, radius=5, logger=self.loggerWidget)
 
 		self.addWidget(QLabel("Id:"), 0, 0)
 		self.addWidget(QLabel("Latitude:"), 1, 0)
@@ -24,6 +27,14 @@ class NodeDetails(QGridLayout):
 		else:
 			self.addWidget(QLabel("Unknown direction"), 3, 1)
 
-		self.addWidget(QWidget(), 4, 0, 1, 2)
+		self.imagesLayout = QGridLayout()
+
+		self.imagesWidget = QWidget()
+		self.imagesWidget.setLayout(self.imagesLayout)
+
+		self.imagesScrollArea = HorizontalScrollArea()
+		self.imagesScrollArea.setWidget(self.imagesWidget)
+
+		self.addWidget(self.imagesScrollArea, 4, 0, 1, 2)
 		self.setRowStretch(4, 1)
 
