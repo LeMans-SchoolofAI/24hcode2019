@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 # Number of epochs to train for 
-NUM_EPOCHS = 5
+NUM_EPOCHS = 15
 
 if __name__ == "__main__":
     model = stop_sign_recognizer(use_gpu=True)
