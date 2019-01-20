@@ -3,3 +3,4 @@ torchvision
 overpy
 requests
 pyside2
+osmapi

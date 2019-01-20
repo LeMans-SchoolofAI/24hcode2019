@@ -5,6 +5,9 @@ import requests
 from time import sleep
 import os, shutil, json
 from osmapi import OsmApi
+from recognizer.model import stop_sign_recognizer
+
+DEFAULT_CACHE_DIR = './workspace'
 
 def printlist(list):
     print(*list, sep = "\n")
@@ -34,13 +37,14 @@ def get_node(zone):
 
     return node_collected
 
-def get_images_around(node, radius=20, logger=None):
+def get_images_around(node, radius=20, path=DEFAULT_CACHE_DIR, logger=None):
     """
     Return all images around a gps point
     Parameters
     ----------
     node               : the {node} with "lat" and "lon" keys
     radius (optionnal) : number of meter to get images around
+    path   (optionnal) : local path to store cached files
     logger (optionnal) : a logger object to log debug messages instead of stdout
     Returns
     -------
@@ -67,28 +71,40 @@ def get_images_around(node, radius=20, logger=None):
         print(f'Response code : {response.status_code}')
 
     images = response.json()
-    return images['pictures']
 
-def save_workspace(images, node, path = './workspace'):
+    # Add local path for all images
+    image_list = []
+    for image in images['pictures']:
+        image["path"] = path + "/" + str(node["id"]) + "/" + image['pictureUrl'][39:60] + str(image["date"]) + '.jpg'
+        image_list.append(image)
+
+    return image_list
+
+def save_workspace(images, node, path=DEFAULT_CACHE_DIR):
     if not os.path.exists(path+"/"+str(node["id"])+"/"):
         os.makedirs(path+"/"+str(node["id"])+"/")
 
     for index, img in enumerate(images):
         print(img['pictureUrl'][39:60]+str(img["date"]))
         img_data = requests.get(img['pictureUrl']).content
-        with open(path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg', 'wb') as handler:
+        with open(img["path"], 'wb') as handler:
             handler.write(img_data)
-        images[index]["path"]=path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg'
         sleep(0.2)
     return images
 
-def delete_workspace(path = './workspace/'):
+def delete_workspace(path=DEFAULT_CACHE_DIR):
     if os.path.exists(path):
         shutil.rmtree(path)
     return 1
 
 def add_info_to_images(images, node):
-    for img in images : #list of images around the node
+    # Detect if there is a stop sign on each image
+    images_files = [image["path"] for image in images]
+    model = stop_sign_recognizer(use_gpu=True)
+    model.load("recognizer/saved_model.save")
+    predictions = model.stop_sign_or_not(images_files)
+
+    for idx, img in enumerate(images): #list of images around the node
         img["node_coordinates"]={"lat":node["lat"],"lng":node["lon"]}
         img["node_id"]=node["id"]
         if "direction" in node :
@@ -97,7 +113,7 @@ def add_info_to_images(images, node):
             img["node_direction"]=None
         img["road_direction"]=None
         img["human_prediction"]=None
-        img["classifier_prediction"]=None
+        img["classifier_prediction"] = predictions[idx]
 
     return images
 
@@ -118,18 +134,19 @@ if __name__ == "__main__":
     nodes = get_node('notlemans')
     for node in nodes :
         images = get_images_around(node, radius = 5)
-#         path = './workspace'
-    #     if os.path.exists(path+"/"+str(node["id"])):
-    #         print(f'node {node["id"]} allready scrapped')
-    #     else:
-    #         images = save_workspace(images, node)
-    #         print(images)
 
-    #     images = add_info_to_images(images, node)
-    #     node["images"]=images
+        path = DEFAULT_CACHE_DIR
+        if os.path.exists(path+"/"+str(node["id"])):
+            print(f'node {node["id"]} allready scrapped')
+        else:
+            images = save_workspace(images, node)
+            print(images)
 
-    #     with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-    #         json.dump(node, foo)
+        images = add_info_to_images(images, node)
+        node["images"]=images
+
+        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+            json.dump(node, foo)
 
 
     #delete_workspace()
