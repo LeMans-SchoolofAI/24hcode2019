@@ -86,10 +86,14 @@ def save_workspace(images, node, path=DEFAULT_CACHE_DIR):
 
     for index, img in enumerate(images):
         print(img['pictureUrl'][39:60]+str(img["date"]))
-        img_data = requests.get(img['pictureUrl']).content
-        with open(img["path"], 'wb') as handler:
-            handler.write(img_data)
-        sleep(0.2)
+
+        if os.path.isfile(img["path"]):
+            print(f'file {img["path"]} allready scrapped')
+        else:
+            img_data = requests.get(img['pictureUrl']).content
+            with open(img["path"], 'wb') as handler:
+                handler.write(img_data)
+            sleep(0.2)
     return images
 
 def delete_workspace(path=DEFAULT_CACHE_DIR):
@@ -136,11 +140,12 @@ if __name__ == "__main__":
         images = get_images_around(node, radius = 5)
 
         path = DEFAULT_CACHE_DIR
-        if os.path.exists(path+"/"+str(node["id"])):
-            print(f'node {node["id"]} allready scrapped')
-        else:
-            images = save_workspace(images, node)
-            print(images)
+
+        #if os.path.exists(path+"/"+str(node["id"])):
+        #    print(f'node {node["id"]} allready scrapped')
+        #else:
+        images = save_workspace(images, node)
+        print(images)
 
         images = add_info_to_images(images, node)
         node["images"]=images
