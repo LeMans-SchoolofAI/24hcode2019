@@ -109,22 +109,10 @@ def update_node_direction(node_id, direction):
 #################################
 if __name__ == "__main__":
 
-<<<<<<< HEAD
-    # nodes = get_node('lemans')
-    # for node in nodes :
-=======
     nodes = get_node('notlemans')
     for node in nodes :
->>>>>>> 06afacacba077489c72d41a3e946a562502cd9d2
-
-    #     path = './workspace'
-
-<<<<<<< HEAD
-    #     images = get_images_around(node, radius = 25)
-=======
         images = get_images_around(node, radius = 5)
->>>>>>> 06afacacba077489c72d41a3e946a562502cd9d2
-
+#         path = './workspace'
     #     if os.path.exists(path+"/"+str(node["id"])):
     #         print(f'node {node["id"]} allready scrapped')
     #     else:
