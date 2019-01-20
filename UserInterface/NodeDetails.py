@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import (QGridLayout, QLabel, QWidget)
 from PySide2.QtCore import Slot, Qt
+from PySide2.QtGui import QPixmap
 from Osmose import get_images_around
 from UserInterface.Utils.HorizontalScrollArea import *
 
@@ -34,6 +35,14 @@ class NodeDetails(QGridLayout):
 
 		self.imagesScrollArea = HorizontalScrollArea()
 		self.imagesScrollArea.setWidget(self.imagesWidget)
+
+		for i, image in enumerate(self.images):
+			imageWidget = QLabel()
+			imageWidget.setPixmap(QPixmap(image["path"]))
+			labelWidget = QLabel("No stop sign")
+
+			self.imagesLayout.addWidget(imageWidget, 0, i)
+			self.imagesLayout.addWidget(labelWidget, 1, i)
 
 		self.addWidget(self.imagesScrollArea, 4, 0, 1, 2)
 		self.setRowStretch(4, 1)
