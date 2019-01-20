@@ -86,15 +86,21 @@ def get_images_around(node, radius=20, path=DEFAULT_CACHE_DIR, logger=None):
 
     return image_list
 
-def save_workspace(images, node, path=DEFAULT_CACHE_DIR):
+def save_workspace(images, node, path=DEFAULT_CACHE_DIR, logger=None):
     if not os.path.exists(path+"/"+str(node["id"])+"/"):
         os.makedirs(path+"/"+str(node["id"])+"/")
 
     for index, img in enumerate(images):
-        print(img['pictureUrl'][39:60]+str(img["date"]))
+        if logger != None:
+            logger.log(img['pictureUrl'][39:60]+str(img["date"]))
+        else:
+            print(img['pictureUrl'][39:60]+str(img["date"]))
 
         if os.path.isfile(img["path"]):
-            print(f'file {img["path"]} allready scrapped')
+            if logger != None:
+                logger.log(f'file {img["path"]} allready scrapped')
+            else:
+                print(f'file {img["path"]} allready scrapped')
         else:
             img_data = requests.get(img['pictureUrl']).content
             with open(img["path"], 'wb') as handler:
