@@ -102,20 +102,32 @@ def get_images_around(node, radius=20, path=DEFAULT_CACHE_DIR, logger=None):
     # Add local path for all images
     image_list = []
     for image in images['pictures']:
-        image["path"] = path + "/" + str(node["id"]) + "/" + image['pictureUrl'][39:60] + str(image["date"]) + '.jpg'
-        image_list.append(image)
+        # Exclude files with a bad filename
+        filename = image['pictureUrl'][39:60] + str(image["date"])
+        if filename.find("/") != -1:
+            print(f'Bad file name : {filename}')
+            pass
+        else:
+            image["path"] = path + "/" + str(node["id"]) + "/" + filename + '.jpg'
+            image_list.append(image)
 
     return image_list
 
-def save_workspace(images, node, path=DEFAULT_CACHE_DIR):
+def save_workspace(images, node, path=DEFAULT_CACHE_DIR, logger=None):
     if not os.path.exists(path+"/"+str(node["id"])+"/"):
         os.makedirs(path+"/"+str(node["id"])+"/")
 
     for index, img in enumerate(images):
-        print(img['pictureUrl'][39:60]+str(img["date"]))
+        if logger != None:
+            logger.log(img['pictureUrl'][39:60]+str(img["date"]))
+        else:
+            print(img['pictureUrl'][39:60]+str(img["date"]))
 
         if os.path.isfile(img["path"]):
-            print(f'file {img["path"]} allready scrapped')
+            if logger != None:
+                logger.log(f'file {img["path"]} allready scrapped')
+            else:
+                print(f'file {img["path"]} allready scrapped')
         else:
             img_data = requests.get(img['pictureUrl']).content
             with open(img["path"], 'wb') as handler:
@@ -162,21 +174,19 @@ def update_node_direction(node_id, direction):
 #################################
 if __name__ == "__main__":
 
-    get_node_by_id(6151343495)
+    # get_node_by_id(6151343495)
 
     # get_intersection('notlemans')
 
-    # nodes = get_node('notlemans')
-    # for node in nodes :
-    #     images = get_images_around(node, radius = 5)
+    nodes = get_node('lemans')
+    for node in nodes :
+        images = get_images_around(node, radius = 5)
 
-    #     path = DEFAULT_CACHE_DIR
-
-    #     #if os.path.exists(path+"/"+str(node["id"])):
-    #     #    print(f'node {node["id"]} allready scrapped')
-    #     #else:
-    #     images = save_workspace(images, node)
-    #     print(images)
+        if os.path.exists(path+"/"+str(node["id"])):
+            print(f'node {node["id"]} allready scrapped')
+        else:
+            images = save_workspace(images, node)
+        print(images)
 
     #     images = add_info_to_images(images, node)
     #     node["images"]=images
