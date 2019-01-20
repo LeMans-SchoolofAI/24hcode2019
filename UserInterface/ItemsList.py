@@ -1,9 +1,24 @@
 from Osmose import get_node, get_images_around
 from PySide2.QtWidgets import (QApplication, QLabel, QPushButton,
                                QWidget, QGridLayout)
-from PySide2.QtCore import Slot, Qt
+from PySide2.QtCore import Slot, Qt, QSignalMapper, SIGNAL, SLOT, QObject
 from UserInterface.Utils.VerticalScrollArea import *
 from UserInterface.Utils.ClosableWidget import *
+from UserInterface.NodeDetails import *
+
+class NodeButton(QPushButton):
+	def __init__(self, text, node):
+		QPushButton.__init__(self, text)
+		self.node = node
+		self.customClickEvent = None
+		self.clicked.connect(self.onClicked)
+
+	def registerClickEvent(self, clickEvent):
+		self.customClickEvent = clickEvent
+
+	def onClicked(self):
+		if self.customClickEvent != None:
+			self.customClickEvent(self.node)
 
 class ItemsList(QGridLayout):
     def __init__(self, mainWidget):
@@ -40,17 +55,18 @@ class ItemsList(QGridLayout):
 
         for i, node in enumerate(get_node("lemans")):
             self.dataGrid.addWidget(QLabel(str(node["id"])), i, 0)
-            self.dataGrid.addWidget(QLabel(str(node["lat"])), i, 1)
-            self.dataGrid.addWidget(QLabel(str(node["lon"])), i, 2)
+            self.dataGrid.addWidget(QLabel(str(node["lat"]) + "°"), i, 1)
+            self.dataGrid.addWidget(QLabel(str(node["lon"]) + "°"), i, 2)
             self.dataGrid.addWidget(QLabel(str(node["highway"])), i, 3)
-            button = QPushButton("Detail")
-            button.clicked.connect(lambda: self.onButtonClicked(node, loggerWidget=self.mainWidget.logger))
+            button = NodeButton("Detail", node)
+            button.registerClickEvent(lambda node: self.onButtonClicked(node, loggerWidget=self.mainWidget.logger))
             self.dataGrid.addWidget(button, i, 4)
 
         self.subWidget = None
 
     def onButtonClicked(self, node, loggerWidget=None):
         self.subWidget = ClosableWidget()
+        self.subWidget.setLayout(NodeDetails(node))
         self.subWidget.registerCloseEvent(self.onWidgetDestroyed)
         self.dataGridWidget.setDisabled(True)
         self.subWidget.setWindowTitle("Node " + str(node["id"]) + " Detail")
