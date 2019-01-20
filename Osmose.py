@@ -51,9 +51,10 @@ def get_images_around(node, radius = 20):
 
     #print('avant carto')
 
-    query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
+    #query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
+    query="http://ns3114475.ip-5-135-139.eu:28111/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
 
-    #print('API',query)
+    print('API',query)
 
     response = requests.get(query, headers=headers)
 
@@ -66,12 +67,12 @@ def save_workspace(images, node, path = './workspace'):
     if not os.path.exists(path+"/"+str(node["id"])+"/"):
         os.makedirs(path+"/"+str(node["id"])+"/")
 
-    for img in images:
+    for index, img in enumerate(images):
         print(img['pictureUrl'][39:60]+str(img["date"]))
         img_data = requests.get(img['pictureUrl']).content
         with open(path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg', 'wb') as handler:
             handler.write(img_data)
-        img["path"]=path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg'
+        images[index]["path"]=path+"/"+str(node["id"])+"/"+img['pictureUrl'][39:60]+str(img["date"])+'.jpg'
         sleep(0.2)
     return images
 
@@ -108,12 +109,21 @@ def update_node_direction(node_id, direction):
 #################################
 if __name__ == "__main__":
 
+<<<<<<< HEAD
     # nodes = get_node('lemans')
     # for node in nodes :
+=======
+    nodes = get_node('notlemans')
+    for node in nodes :
+>>>>>>> 06afacacba077489c72d41a3e946a562502cd9d2
 
     #     path = './workspace'
 
+<<<<<<< HEAD
     #     images = get_images_around(node, radius = 25)
+=======
+        images = get_images_around(node, radius = 5)
+>>>>>>> 06afacacba077489c72d41a3e946a562502cd9d2
 
     #     if os.path.exists(path+"/"+str(node["id"])):
     #         print(f'node {node["id"]} allready scrapped')
