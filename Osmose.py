@@ -25,11 +25,11 @@ def get_intersection(zone):
     
     for way in result.ways:
         #TODO if node in multiple way : add node as intersection
-        print(way)
-        temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
-        if 'direction' in node.tags:
-            temp['direction'] = node.tags['direction']
-        intersec_collected.append(temp)
+        # print(way)
+        # temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
+        # if 'direction' in node.tags:
+        #     temp['direction'] = node.tags['direction']
+        # intersec_collected.append(temp)
 
     return intersec_collected
 
@@ -46,6 +46,7 @@ def get_node_by_id(node):
         node_collected.append(temp)
 
     return node_collected
+
 
 def get_node(zone):
     """collect node ["highway"="stop"] from OSMOSE / OVERPASS TURBO
@@ -200,6 +201,7 @@ if __name__ == "__main__":
 
     osmose_one_node(1364412209)
 
+
     if False:
 
         nodes = get_node('lemans')
@@ -212,11 +214,11 @@ if __name__ == "__main__":
                 images = save_workspace(images, node)
             print(images)
 
-    #     images = add_info_to_images(images, node)
-    #     node["images"]=images
+        images = add_info_to_images(images, node)
+        node["images"]=images
 
-    #     with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-    #         json.dump(node, foo)
+        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+            json.dump(node, foo)
 
 
     #delete_workspace()
