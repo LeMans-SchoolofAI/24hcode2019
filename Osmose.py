@@ -75,8 +75,14 @@ def get_images_around(node, radius=20, path=DEFAULT_CACHE_DIR, logger=None):
     # Add local path for all images
     image_list = []
     for image in images['pictures']:
-        image["path"] = path + "/" + str(node["id"]) + "/" + image['pictureUrl'][39:60] + str(image["date"]) + '.jpg'
-        image_list.append(image)
+        # Exclude files with a bad filename
+        filename = image['pictureUrl'][39:60] + str(image["date"])
+        if filename.find("/") != -1:
+            print(f'Bad file name : {filename}')
+            pass
+        else:
+            image["path"] = path + "/" + str(node["id"]) + "/" + filename + '.jpg'
+            image_list.append(image)
 
     return image_list
 
@@ -135,16 +141,16 @@ def update_node_direction(node_id, direction):
 #################################
 if __name__ == "__main__":
 
-    nodes = get_node('notlemans')
+    nodes = get_node('lemans')
     for node in nodes :
         images = get_images_around(node, radius = 5)
 
         path = DEFAULT_CACHE_DIR
 
-        #if os.path.exists(path+"/"+str(node["id"])):
-        #    print(f'node {node["id"]} allready scrapped')
-        #else:
-        images = save_workspace(images, node)
+        if os.path.exists(path+"/"+str(node["id"])):
+            print(f'node {node["id"]} allready scrapped')
+        else:
+            images = save_workspace(images, node)
         print(images)
 
         images = add_info_to_images(images, node)
