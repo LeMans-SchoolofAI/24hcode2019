@@ -4,7 +4,7 @@ import overpy
 import requests
 from time import sleep
 import os, shutil, json
-#from osmapi import OsmApi
+from osmapi import OsmApi
 from recognizer.model import stop_sign_recognizer
 
 DEFAULT_CACHE_DIR = './workspace'
@@ -31,7 +31,7 @@ def get_intersection(zone):
         #     temp['direction'] = node.tags['direction']
         # intersec_collected.append(temp)
         pass
-        
+
     return intersec_collected
 
 def get_node_by_id(node):
