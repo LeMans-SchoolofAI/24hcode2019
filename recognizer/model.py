@@ -239,7 +239,7 @@ class stop_sign_recognizer(object):
         Analyse a list of images and return if there is a stop sign or not in each
         Parameters
         ----------
-        photos :a list of images' path
+        photos : a list of images' path
         Returns
         -------
         a list of float (one for each image from input) : confidence that there is a stop sign (1 : yes, 0 : no)

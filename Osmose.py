@@ -17,14 +17,14 @@ def get_node(zone):
     """
     api = overpy.Overpass()
 
-# fetch stop 
+    # fetch stop 
     if zone == 'lemans':
         result = api.query("""[out:json][timeout:25];area(3600107435)->.searchArea;(node["highway"="stop"](area.searchArea););out;>;out skel qt;""")
     else:
         result = api.query("""[out:json][timeout:25];(node["highway"="stop"](47.99686464222191,0.18395662307739258,48.00295961729204,0.19527554512023926););out;>;out skel qt;""")
 
     node_collected = []
- 
+    
     for node in result.nodes:
         temp = {'id': node.id, 'lat': str(node.lat), 'lon': str(node.lon), 'highway': node.tags['highway']}
         if 'direction' in node.tags:
@@ -33,31 +33,37 @@ def get_node(zone):
 
     return node_collected
 
-def get_images_around(node, radius = 20):
-    """Return all images around a gps point
-
-    Keyword arguments:
-    node -- the {node} with "lat" and "lon" keys
-    output (optionnal) -- number of meter to get images around
+def get_images_around(node, radius=20, logger=None):
     """
-    #Hi I'm not a bot
-    #print('begin get image')
-
+    Return all images around a gps point
+    Parameters
+    ----------
+    node               : the {node} with "lat" and "lon" keys
+    radius (optionnal) : number of meter to get images around
+    logger (optionnal) : a logger object to log debug messages instead of stdout
+    Returns
+    -------
+    a list of images in the corresponding area
+    """
     headers = requests.utils.default_headers()
     headers.update({
         'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0',
     })
 
-    #print('avant carto')
-
     #query="http://api-pic4carto.openstreetmap.fr/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
     query="http://ns3114475.ip-5-135-139.eu:28111/search/around?lat={}&lng={}&radius={}".format(node["lat"], node["lon"], radius)
 
-    print('API',query)
+    if logger is not None:
+        logger.log(f'API : {query}')
+    else:
+        print(f'API : {query}')
 
     response = requests.get(query, headers=headers)
 
-    print(response.status_code)
+    if logger is not None:
+        logger.log(f'Response code : {response.status_code}')
+    else:
+        print(f'Response code : {response.status_code}')
 
     images = response.json()
     return images['pictures']
