@@ -1,2 +1,5 @@
 torch
 torchvision
+overpy
+requests
+pyside2
