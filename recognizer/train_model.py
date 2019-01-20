@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 params_to_update.append(param)
                 print("\t",name)
     else:
-        for name,param in model_ft.named_parameters():
+        for name,param in model.model.named_parameters():
             if param.requires_grad == True:
                 print("\t",name)
 

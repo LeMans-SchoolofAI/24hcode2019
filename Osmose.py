@@ -30,7 +30,8 @@ def get_intersection(zone):
         # if 'direction' in node.tags:
         #     temp['direction'] = node.tags['direction']
         # intersec_collected.append(temp)
-
+        pass
+        
     return intersec_collected
 
 def get_node_by_id(node):
@@ -194,31 +195,19 @@ def osmose_one_node(node):
 #                               #
 #################################
 if __name__ == "__main__":
+    path = DEFAULT_CACHE_DIR
+    nodes = get_node('lemans')
+    for node in nodes :
+        images = get_images_around(node, radius = 5)
 
-    # get_node_by_id(6151343495)
+        if os.path.exists(path+"/"+str(node["id"])):
+            print(f'node {node["id"]} allready scrapped')
+        else:
+            images = save_workspace(images, node)
+        print(images)
 
-    # get_intersection('notlemans')
+    images = add_info_to_images(images, node)
+    node["images"]=images
 
-    osmose_one_node(1364412209)
-
-
-    if False:
-
-        nodes = get_node('lemans')
-        for node in nodes :
-            images = get_images_around(node, radius = 5)
-
-            if os.path.exists(path+"/"+str(node["id"])):
-                print(f'node {node["id"]} allready scrapped')
-            else:
-                images = save_workspace(images, node)
-            print(images)
-
-        images = add_info_to_images(images, node)
-        node["images"]=images
-
-        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-            json.dump(node, foo)
-
-
-    #delete_workspace()
+    with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+        json.dump(node, foo)

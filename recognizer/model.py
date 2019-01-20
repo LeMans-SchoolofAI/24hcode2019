@@ -31,7 +31,7 @@ NUM_CLASSES = 2
 BATCH_SIZE = 8
 # Flag for feature extracting. When False, we finetune the whole model, 
 #   when True we only update the reshaped layer params
-FEATURE_EXTRACT = True
+FEATURE_EXTRACT = False
 # Default file for saved model
 DEFAULT_FILE = "saved_model.save"
 
