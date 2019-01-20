@@ -70,7 +70,7 @@ class ItemsList(QGridLayout):
         self.subWidget.registerCloseEvent(self.onWidgetDestroyed)
         self.dataGridWidget.setDisabled(True)
         self.subWidget.setWindowTitle("Node " + str(node["id"]) + " Detail")
-        self.subWidget.setFixedSize(640, 480)
+        self.subWidget.setFixedSize(800, 600)
         self.subWidget.show()
 
     def onWidgetDestroyed(self):
