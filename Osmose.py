@@ -206,8 +206,8 @@ if __name__ == "__main__":
             images = save_workspace(images, node)
         print(images)
 
-    images = add_info_to_images(images, node)
-    node["images"]=images
+        images = add_info_to_images(images, node)
+        node["images"]=images
 
-    with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
-        json.dump(node, foo)
+        with open(path+"/"+str(node["id"])+'/data.json', 'w') as foo:
+            json.dump(node, foo)

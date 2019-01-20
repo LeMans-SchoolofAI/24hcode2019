@@ -54,7 +54,7 @@ class NodeDetails(QGridLayout):
 		for i, image in enumerate(self.images):
 			imageWidget = QLabel()
 			imagePixmap = QPixmap(image["path"])
-			imagePixmap = imagePixmap.scaledToHeight(390)
+			imagePixmap = imagePixmap.scaledToHeight(224)
 			imageWidget.setPixmap(imagePixmap)
 
 			self.imagesLayout.addWidget(imageWidget, 0, i)
